@@ -1,41 +1,42 @@
-# /bin/bash
+#!/bin/bash
 set -Eeuo pipefail
 
-TEMPLATE="/docker-entrypoint-initdb.d/init.sql.template"
+DB_BASE_PATH="/docker-entrypoint-initdb.d"
+TEMPLATE="$DB_BASE_PATH/init.sql.template"
+DB_BACKUP_PATH="$DB_BASE_PATH/db-backups"
 OUTPUT="/tmp/20-init.sql"
-BACKUP_FILE="/docker-entrypoint-initdb.d/30-backup20250609.sql"
+MARIA_DB_SOCKET="/run/mysqld/mysqld.sock"
 
-# Use MariaDB official env names to align with image behavior
-: "${MYSQL_ROOT_PASSWORD:?ERROR: MYSQL_ROOT_PASSWORD is required}"
-: "${MYSQL_DATABASE:?ERROR: MYSQL_DATABASE is required}"
-: "${MYSQL_USER:?ERROR: MYSQL_USER is required}"
-: "${MYSQL_PASSWORD:?ERROR: MYSQL_PASSWORD is required}"
+# Find the latest .sql file in both backup directories
+BACKUP_FILE=$(ls -1t "$DB_BACKUP_PATH"/*.sql 2>/dev/null | head -n 1 || true)
 
-# Only generate SQL if template exists
-# CREATE the OUTPUT file in /tmp
+if [ -z "$BACKUP_FILE" ]; then
+  echo "No backup file found in $DB_BACKUP_PATH"
+  exit 1
+fi
+
+echo "🔍 The script selected this backup file: $BACKUP_FILE"
+echo "🚀 First initialization detected."
+
 if [ -f "$TEMPLATE" ]; then
-  envsubst < "$TEMPLATE" > "$OUTPUT"
-  chmod 600 "$OUTPUT"
-else
-  echo "⚠️ No template found at $TEMPLATE, skipping."
+  echo "📝 Generating init SQL to /tmp/..."
+  sed -e "s/\${MYSQL_DATABASE}/$MYSQL_DATABASE/g" \
+      -e "s/\${MYSQL_USER}/$MYSQL_USER/g" \
+      -e "s/\${MYSQL_PASSWORD}/$MYSQL_PASSWORD/g" \
+      "$TEMPLATE" > "$OUTPUT"
+  
+  echo "⏳ Waiting for MariaDB socket..."
+  until mariadb-admin ping --socket=/run/mariadb/mariadb.sock --silent; do
+    sleep 1
+  done
+
+  echo "⚙️ Executing template SQL..."
+  mariadb --socket=/run/mariadb/mariadb.sock -uroot -p"${MYSQL_ROOT_PASSWORD}" < "$OUTPUT"
 fi
 
-# Only run manual SQL if server is up and we are on first init.
-# The MariaDB entrypoint will auto-run *.sql in this directory on first init,
-# so you typically do NOT need to run mysql yourself here.
-# If you must run it (e.g., to control order), do it conditionally:
-if [ ! -d "/var/lib/mysql/mysql" ]; then
-  # First init. Let the entrypoint process $OUTPUT automatically.
-  :
-else
-  # Post-init runs: apply idempotent grants if necessary.
-  if [ -f "$OUTPUT" ]; then
-    echo "Applying idempotent init SQL post-init..."
-    mariadb --protocol=socket --socket=/var/run/mariadb/mariadb.sock \
-      -uroot -p"$MYSQL_ROOT_PASSWORD" \
-      ${MYSQL_DATABASE:+ "$MYSQL_DATABASE"} < "$OUTPUT" \
-      ${MYSQL_DATABASE:+ "$MYSQL_DATABASE"} < "$BACKUP_FILE"
-  fi
+if [ -n "$BACKUP_FILE" ] && [ -f "$BACKUP_FILE" ]; then
+  echo "📦 Restoring backup file to ${MYSQL_DATABASE}..."
+  mariadb --socket=/run/mariadb/mariadb.sock -uroot -p"${MYSQL_ROOT_PASSWORD}" "${MYSQL_DATABASE}" < "$BACKUP_FILE"
 fi
 
-echo "🎉 Initialization complete."
+echo "✅ Script complete."

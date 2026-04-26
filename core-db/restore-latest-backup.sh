@@ -8,7 +8,7 @@ DB_PASSWORD="${DB_PASSWORD:-hamed}"
 DB_NAME="${DB_DATABASE:-node-project}"
 
 # Find the latest .sql file in both backup directories
-BACKUP_FILE=$(ls -1t db-backup/*.sql server/src/db-backups/*.sql 2>/dev/null | head -n 1)
+BACKUP_FILE=$(ls -1t db-backup/*.sql db-backups/*.sql 2>/dev/null | head -n 1)
 
 if [ -z "$BACKUP_FILE" ]; then
   echo "No backup file found in db-backup/ or server/src/db-backups/."

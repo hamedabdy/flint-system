@@ -71,7 +71,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./core-db/my.cnf:/etc/mysql/my.cnf   # Mount custom my.cnf
-      - ./core-db/db-backups/backup20250609.sql:/docker-entrypoint-initdb.d/30-backup20250609.sql
+      - ./core-db/db-backups:/docker-entrypoint-initdb.d/db-backups  # Mount the db-backups directory
       - ./core-db/init.sql.template:/docker-entrypoint-initdb.d/init.sql.template  # Mount the SQL template
       - ./core-db/init.sql-subst.sh:/docker-entrypoint-initdb.d/init.sql-subst.sh  # Mount the shell script
     env_file:
@@ -99,8 +99,8 @@ services:
       context: ./rproxy
       dockerfile: Dockerfile
     ports:
-      - "80:80"  # Single entry point
-      - "443:443" # HTTPS
+      - "8090:80"  # Single entry point
+      - "7443:7443" # HTTPS
     depends_on:
       - core-server
       - core-ui-react

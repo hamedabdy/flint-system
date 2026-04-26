@@ -14,6 +14,7 @@ git clone --recurse-submodules https://github.com/hamedabdy/node-app-parent.git
 Required packages to install :
 
 ```bash
+make
 docker
 docker-compose
 ```
@@ -29,13 +30,14 @@ docker run -it --rm -p 3000:3000 my-app
 ```
 
 ### All Microservices
-
+#### Manually Using docker-compose
 ```bash
 # from parent dir
 # manual use of docker-compose and load yml files
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --exit-code-from core-server
 ```
 
+#### Automatic Using Makefile
 ```bash
 # from parent dir
 # use Makefile and use pre-built commands
