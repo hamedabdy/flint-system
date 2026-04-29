@@ -17,14 +17,13 @@ services:
       # - db
       db:
         condition: service_healthy
-        restart: true
       # - redis
     healthcheck:
       test: ["CMD-SHELL", "wget --spider --quiet \"http://$$HOST:$$PORT/ping\" || exit 1"] #curl --fail -s -o /dev/null http://$HOST:$PORT/api/table/test_connection || exit 1
-      interval: 25s
-      retries: 3
+      interval: 5s
+      retries: 10
       start_period: 30s
-      timeout: 10s
+      timeout: 5s
     restart: unless-stopped
 
   # AI & Scripting Service
@@ -77,11 +76,11 @@ services:
     env_file:
       - ./core-db/.env
     healthcheck:
-      test: ["CMD-SHELL", "mariadb-admin --socket=/var/run/mariadb/mariadb.sock -uroot -p\"$$MYSQL_ROOT_PASSWORD\" ping --silent"]
-      interval: 10s
-      retries: 3
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      retries: 10
       start_period: 30s
-      timeout: 10s
+      timeout: 5s
     restart: unless-stopped
 
   # Cache & Session Store
