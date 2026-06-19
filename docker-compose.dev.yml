@@ -2,19 +2,19 @@
 
 services:
   # Core API Server
-  core-server:
+  flint-core:
     build:
-      context: ./core-server
+      context: ./flint-core
       dockerfile: Dockerfile
       target: development  # Specify the development stage
     volumes:
-      - ./core-server/src:/app/src
-      - ./core-server/package.json:/app/package.json  # Mount package.json
-      - ./core-server/package-lock.json:/app/package-lock.json  # Mount package-lock.json
-      - ./core-server/nodemon.json:/app/nodemon.json  # Ensure nodemon settings are applied
-      - ./core-server/.env:/app/.env
+      - ./flint-core/src:/app/src
+      - ./flint-core/package.json:/app/package.json  # Mount package.json
+      - ./flint-core/package-lock.json:/app/package-lock.json  # Mount package-lock.json
+      - ./flint-core/nodemon.json:/app/nodemon.json  # Ensure nodemon settings are applied
+      - ./flint-core/.env:/app/.env
     env_file:
-      - ./core-server/.env # need to load .env.dev
+      - ./flint-core/.env # need to load .env.dev
     environment:
       - NODE_ENV=development
       - DB_HOST=db       # Set DB_HOST directly in docker-compose
@@ -27,29 +27,29 @@ services:
       target: development  # Specify the development stage
     volumes:
       - ./selfimprove-app/src:/app/src
-      - ./core-server/package.json:/app/package.json  # Mount package.json
-      - ./core-server/package-lock.json:/app/package-lock.json  # Mount package-lock.json
-      - ./core-server/nodemon.json:/app/nodemon.json  # Ensure nodemon settings are applied
-      - ./core-server/.env:/app/.env
+      - ./flint-core/package.json:/app/package.json  # Mount package.json
+      - ./flint-core/package-lock.json:/app/package-lock.json  # Mount package-lock.json
+      - ./flint-core/nodemon.json:/app/nodemon.json  # Ensure nodemon settings are applied
+      - ./flint-core/.env:/app/.env
     env_file:
       - ./selfimprove-app/.env # need to load .env.dev
     environment:
       - NODE_ENV=development
 
   # React Frontend
-  core-ui-react:
+  flint-face:
     build:
-      context: ./core-ui-react
+      context: ./flint-face
       dockerfile: Dockerfile
       target: development  # Specify the development stage
     volumes:
-      - ./core-ui-react/src:/app/src
-      - ./core-ui-react/public:/app/public
-      - ./core-ui-react/package.json:/app/package.json
-      - ./core-ui-react/package-lock.json:/app/package-lock.json
-      - ./core-ui-react/.env:/app/.env # Mount .env file for development
+      - ./flint-face/src:/app/src
+      - ./flint-face/public:/app/public
+      - ./flint-face/package.json:/app/package.json
+      - ./flint-face/package-lock.json:/app/package-lock.json
+      - ./flint-face/.env:/app/.env # Mount .env file for development
     env_file:
-      - ./core-ui-react/.env # need to load .env.dev
+      - ./flint-face/.env # need to load .env.dev
     environment:
       - NODE_ENV=development
       - VITE_ENV=development

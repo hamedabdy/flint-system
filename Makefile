@@ -27,7 +27,7 @@ clean:
 
 test:
 	@echo "🚀 Starting test environment..."
-	docker compose -f docker-compose.yml -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from core-server
+	docker compose -f docker-compose.yml -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from flint-core
 
 up:
 	@echo "🚀 Starting production environment..."

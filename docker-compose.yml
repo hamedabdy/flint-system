@@ -2,20 +2,20 @@
 
 services:
   # Core API Server
-  core-server:
+  flint-core:
     build:
-      context: ./core-server
+      context: ./flint-core
       dockerfile: Dockerfile
     ports:
       - "3000:3000" # External_portal:internal_port. Map to 3000 inside the container
     env_file:
-      - ./core-server/.env
+      - ./flint-core/.env
     environment:
       - NODE_ENV=production
-      - DB_HOST=db # Set DB_HOST directly in docker-compose
+      - DB_HOST=flint-db # Set DB_HOST directly in docker-compose
     depends_on:
       # - db
-      db:
+      flint-db:
         condition: service_healthy
       # - redis
     healthcheck:
@@ -27,30 +27,30 @@ services:
     restart: unless-stopped
 
   # AI & Scripting Service
-  selfimprove-app:
+  flint-worker:
     build:
-      context: ./selfimprove-app
+      context: ./flint-worker
       dockerfile: Dockerfile
     ports:
       - "3002:3000" # External_portal:internal_port. Map to 3000 inside the container
     env_file:
-      - ./selfimprove-app/.env
+      - ./flint-worker/.env
       # - redis
     restart: unless-stopped
 
   # React Frontend
-  core-ui-react:
+  flint-face:
     build:
-      context: ./core-ui-react
+      context: ./flint-face
       dockerfile: Dockerfile
     ports:
       - "3001:3000" # External_portal:internal_port. Map to 3000 inside the container
     env_file:
-      - ./core-ui-react/.env
+      - ./flint-face/.env
     stdin_open: true
     tty: true
     depends_on:
-      core-server: 
+      flint-core: 
         condition: service_healthy
         restart: true
     healthcheck:
@@ -62,19 +62,19 @@ services:
     restart: unless-stopped
 
   # Database
-  db:
+  flint-db:
     image: mariadb:lts-ubi9
     # command: --sql_mode=""
     ports:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./core-db/my.cnf:/etc/mysql/my.cnf   # Mount custom my.cnf
-      - ./core-db/db-backups:/docker-entrypoint-initdb.d/db-backups  # Mount the db-backups directory
-      - ./core-db/init.sql.template:/docker-entrypoint-initdb.d/init.sql.template  # Mount the SQL template
-      - ./core-db/init.sql-subst.sh:/docker-entrypoint-initdb.d/init.sql-subst.sh  # Mount the shell script
+      - ./flint-db/my.cnf:/etc/mysql/my.cnf   # Mount custom my.cnf
+      - ./flint-db/db-backups:/docker-entrypoint-initdb.d/db-backups  # Mount the db-backups directory
+      - ./flint-db/init.sql.template:/docker-entrypoint-initdb.d/init.sql.template  # Mount the SQL template
+      - ./flint-db/init.sql-subst.sh:/docker-entrypoint-initdb.d/init.sql-subst.sh  # Mount the shell script
     env_file:
-      - ./core-db/.env
+      - ./flint-db/.env
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
@@ -101,9 +101,9 @@ services:
       - "8090:80"  # Single entry point
       - "7443:7443" # HTTPS
     depends_on:
-      - core-server
-      - core-ui-react
-      - selfimprove-app
+      - flint-core
+      - flint-face
+      - flint-worker
 
 volumes:
   db_data:
