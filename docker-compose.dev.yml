@@ -17,22 +17,22 @@ services:
       - ./flint-core/.env # need to load .env.dev
     environment:
       - NODE_ENV=development
-      - DB_HOST=db       # Set DB_HOST directly in docker-compose
+      - DB_HOST=flint-db       # Set DB_HOST directly in docker-compose
 
   # AI & Scripting Service
-  selfimprove-app:
+  flint-worker:
     build:
-      context: ./selfimprove-app
+      context: ./flint-worker
       dockerfile: Dockerfile
       target: development  # Specify the development stage
     volumes:
-      - ./selfimprove-app/src:/app/src
+      - ./flint-worker/src:/app/src
       - ./flint-core/package.json:/app/package.json  # Mount package.json
       - ./flint-core/package-lock.json:/app/package-lock.json  # Mount package-lock.json
       - ./flint-core/nodemon.json:/app/nodemon.json  # Ensure nodemon settings are applied
       - ./flint-core/.env:/app/.env
     env_file:
-      - ./selfimprove-app/.env # need to load .env.dev
+      - ./flint-worker/.env # need to load .env.dev²
     environment:
       - NODE_ENV=development
 
