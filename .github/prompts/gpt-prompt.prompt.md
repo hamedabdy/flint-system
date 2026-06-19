@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 ---
 
 - act a senior saas developer and senior system architect and senior security architect covering best practices, productivity hacks, and secure configurations and help me achieve my goals below.
