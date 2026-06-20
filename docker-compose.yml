@@ -7,7 +7,7 @@ services:
       context: ./flint-core
       dockerfile: Dockerfile
     ports:
-      - "3000:3000" # External_portal:internal_port. Map to 3000 inside the container
+      - "3010:3000" # External_portal:internal_port. Map to 3000 inside the container
     env_file:
       - ./flint-core/.env
     environment:
@@ -24,18 +24,6 @@ services:
       retries: 10
       start_period: 30s
       timeout: 5s
-    restart: unless-stopped
-
-  # AI & Scripting Service
-  flint-worker:
-    build:
-      context: ./flint-worker
-      dockerfile: Dockerfile
-    ports:
-      - "3002:3000" # External_portal:internal_port. Map to 3000 inside the container
-    env_file:
-      - ./flint-worker/.env
-      # - redis
     restart: unless-stopped
 
   # React Frontend
@@ -59,6 +47,18 @@ services:
       retries: 3
       start_period: 30s
       timeout: 10s
+    restart: unless-stopped
+
+  # AI & Scripting Service
+  flint-worker:
+    build:
+      context: ./flint-worker
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3000" # External_portal:internal_port. Map to 3000 inside the container
+    env_file:
+      - ./flint-worker/.env
+      # - redis
     restart: unless-stopped
 
   # Database
@@ -98,7 +98,7 @@ services:
       context: ./rproxy
       dockerfile: Dockerfile
     ports:
-      - "8090:80"  # Single entry point
+      - "8090:8081"  # Single entry point
       - "7443:7443" # HTTPS
     depends_on:
       - flint-core
