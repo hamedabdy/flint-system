@@ -2,7 +2,7 @@
 notes.txt
 
 # .gitignore
-# .env
+.env.example
 
 logo
 
