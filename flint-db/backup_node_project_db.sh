@@ -2,7 +2,7 @@
 # Backup script for node-project database from core-db Docker container
 
 BACKUP_DIR="db-backups"
-CONTAINER_NAME="node-app-parent-db-1"
+CONTAINER_NAME="flint-system-flint-db-1"
 DB_NAME="node-project"
 DB_USER="root"
 DB_PASS="hamed" # Change this to your actual DB password
