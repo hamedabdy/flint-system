@@ -53,3 +53,30 @@ services:
     environment:
       - NODE_ENV=development
       - VITE_ENV=development
+
+  # Vector DB & Ingestion GUI
+  flint-memory:
+    build:
+      context: ./flint-memory
+      dockerfile: Dockerfile
+      target: development # <--- ADD THIS
+    ports:
+      - "3003:3000"
+    volumes:
+      # Mount the local files so nodemon can watch them
+      - ./flint-memory:/app     
+      # Prevent local node_modules from overwriting container's
+      - /app/node_modules       
+    depends_on:
+      flint-vector-db:
+        condition: service_healthy
+      flint-embedder:
+        condition: service_started
+    healthcheck:
+      # Nodemon might restart, so give it a bit more time
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
