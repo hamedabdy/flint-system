@@ -7,11 +7,13 @@
 
 ## 2. CURRENT STATE & PHASE
 - **Phase:** 2 of 2 (Node.js Application Development & Frontend Integration).
-- **Status:** Phase 1 complete. Subconscious memory online. Metadata models (`SysDbObject`, `SysDictionary`) implemented and refined. Frontend `SimpleForm` component and Reference field UIs are actively being developed with strict styling constraints.
+- **Status:** Phase 1 complete. Subconscious memory online. Metadata models (`SysDbObject`, `SysDictionary`) implemented and refined. `Background Script` UI built and successfully connected to `flint-worker`. `FormLayoutSettings` modal built and wired into `DynamicForm` via `HeaderMenu`.
 - **Next Steps:** 
   1. Implement XLSX and CSV ingestion parsers and their corresponding `sys_ui_page` interfaces.
   2. Expand test coverage for transform maps and error handling across all file formats.
   3. Ensure all new frontend components adhere to the CSS Module / Design Token constraints and commit log protocols.
+  4. Design and implement a CSS dependency table for `sys_ui_page` to allow external stylesheet linking.
+  5. Merge/replace `DynamicForm.jsx` with the new clone that utilizes the `sys_ui_form` layout config to dynamically render 1-col/2-col sections.
 
 ## 3. ARCHITECTURE DECISIONS LOG
 - **[Prior] Chose `MEMORY.md` over a Database Table for the LLM interface:** Markdown is the native language of LLMs. Provides perfect hierarchy, avoids JSON/token bloat, allows human developer to easily read/edit state.
@@ -30,15 +32,18 @@
 - **[Prior] Added Frontend Feature Freeze & Constraints:** Do not introduce regressions. Do not modify existing server API integration for the "All" menu panel. Do not implement "to do later" features (global search, chat panel, DB-fetched top menu)—leave clearly labeled, visually consistent placeholder components.
 - **[Prior] Enforced Commit / Change Log Protocol:** All changes must be documented using a strict format: What changed, Why (GUI revamp / bug fix / TDD red-green / regression fix), Files affected, Test cases added, Regressions checked.
 - **[Prior] Refined Metadata Models:** `SysDbObject.js` now formats display names by removing the `u_` prefix. `SysDictionary.js` `_copyParentFields` injects base system fields when no parent fields are found, ensuring unique records based on element attribute, and handles data types that don't require `max_length`.
-- **[Today] Utilized sys_ui_page for Custom UI Flows:** System admins can dynamically create React pages stored in `sys_ui_page` records. The core frontend automatically renders these, keeping the codebase clean and allowing custom interfaces (like the XML Import flow) to be managed via metadata.
+- **[Prior] Utilized sys_ui_page for Custom UI Flows:** System admins can dynamically create React pages stored in `sys_ui_page` records. The core frontend automatically renders these, keeping the codebase clean and allowing custom interfaces (like the XML Import flow) to be managed via metadata.
+- **[Today] Injected CSS for sys_ui_page limitation:** Since `sys_ui_page` currently only supports a single script field, CSS is injected via `<style>` tags inside the React component using strictly prefixed class names (`bg-script-*`) to prevent global DOM collisions.
+- **[Today] Integrated flint-worker for Server-Side JS Execution:** Connected the Background Script `sys_ui_page` UI to the `flint-worker` microservice (`/api/exec-js` route) via Nginx `/worker/` proxy. Captures both `console.log` arrays and returned `result` objects, with an execution timer.
+- **[Today] Defined sys_ui_form Architecture for Form Layouts:** Created `sys_ui_form` table (fields: `name`, `view`, `value`) to store JSON array configurations of form sections. Layouts are edited via a `FormLayoutSettings` modal (slushbucket UI) triggered from `HeaderMenu`.
 
 ## 4. RECENT CONTEXT CHANGES
-- *Last updated: End of Day - XML Import Implementation*
-- Successfully implemented the XML ingestion portion of the MVP Data Import Feature.
-- Backend service handles parsing, staging, and transform maps for XML files.
-- Frontend UI for the XML import is rendered via `sys_ui_page`, adhering to CSS Module/Design Token constraints.
-- Drafted strict commit log for the XML feature implementation.
-- Next immediate steps in the Data Import Feature: Implement XLSX and CSV ingestion parsers and expand transform map testing.
+- *Last updated: End of Day - Background Script & Form Layout Editor Implementation*
+- Successfully built and connected the `Background Script` UI to `flint-worker`. Server-side JS execution is operational from the UI. Fixed a CSS contrast bug by hardcoding textarea background/text colors.
+- Designed and implemented `FormLayoutSettings.jsx`, a 2-pane slushbucket modal supporting 1-column and 2-column sections. "General" section is permanently enforced.
+- Wired `FormLayoutSettings` into `DynamicForm.jsx`, `PageHeader.jsx`, and `HeaderMenu.jsx` using callback props (`onFormLayoutClick`) to open a modal instead of triggering a page redirect.
+- Added API integration to fetch/save layout JSON to `sys_ui_form` via generic table APIs.
+- Next immediate steps: Merge the `DynamicForm` layout rendering logic so the form actually renders 1-col/2-col sections based on the saved JSON config. Continue with XLSX/CSV ingestion parsers.
 - The `flint-memory` Vector DB continues to serve as the primary subconscious recall mechanism.
 
 ## 5. IMPLEMENTED PROTOCOLS (RULES FOR THE AI)
